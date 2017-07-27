@@ -91,12 +91,12 @@ namespace PCCExportTableCompare
                     int biggerTableSize = Math.Max(file1TableNames.Count, file2TableNames.Count);
                     for (int i = 0; i < biggerTableSize; i++)
                     {
-                        if (i < file1TableNames.Count && i < file1TableNames.Count && file1TableNames[i] == file2TableNames[i])
+                        if (i < file1TableNames.Count && i < file2TableNames.Count && file1TableNames[i] == file2TableNames[i])
                         {
                             Console.WriteLine(i + "\tBOTH\t| " + file1TableNames[i]);
                             continue;
                         }
-                        if (i < file1TableNames.Count && i < file1TableNames.Count && file1TableNames[i] != file2TableNames[i])
+                        if (i < file1TableNames.Count && i < file2TableNames.Count && file1TableNames[i] != file2TableNames[i])
                         {
                             Console.WriteLine(">" + i + "\tFILE1 \t| " + file1TableNames[i]);
                             Console.WriteLine(">" + i + "\tFILE2 \t| " + file2TableNames[i]);
@@ -113,6 +113,7 @@ namespace PCCExportTableCompare
                         if (i < file2TableNames.Count)
                         {
                             Console.WriteLine(i + "\tFILE2 ONLY\t| " + file2TableNames[i]);
+                            continue;
                         }
                     }
                     Console.WriteLine(existInBothDifferences + " items exist in both as indexes but have different data.");
@@ -137,20 +138,24 @@ namespace PCCExportTableCompare
             while (endOffset > 0)
             {
                 int index = BitConverter.ToInt32(data, endOffset);
-                if (index < 0 && -index < pcc.Imports.Count)
+                if (index < 0 && -index - 1 < pcc.Imports.Count)
                 {
                     //import
                     int localindex = Math.Abs(index) - 1;
                     if (Verbose)
                     {
-                        Console.WriteLine(localindex + "\t| " + pcc.Imports[localindex].PackageFullName + "." + pcc.Imports[localindex].ObjectName + "("+index.ToString("X8")+" at 0x" + endOffset.ToString("X8") + ")");
+                        Console.WriteLine("IMPORT\t"+localindex + "\t| " + pcc.Imports[localindex].PackageFullName + "." + pcc.Imports[localindex].ObjectName + "("+index.ToString("X8")+" at 0x" + endOffset.ToString("X8") + ")");
                     }
                     tableItems.Add(pcc.Imports[localindex].PackageFullName + "." + pcc.Imports[localindex].ObjectName);
                }
                 else if (index > 0 && index != count)
                 {
-                    Console.WriteLine("Found export: " + index);
+                    int localindex = index - 1;
+                    Console.WriteLine("EXPORT\t" +  index+", "+pcc.Exports[localindex].PackageFullName+"."+pcc.Exports[localindex].ObjectName + "(" + index.ToString("X8") + " at 0x" + endOffset.ToString("X8") + ")");
 
+                } else
+                {
+                    Console.WriteLine("UNPARSED INDEX: " + index);
                 }
                 //Console.WriteLine(index);
                 if (index == count)
